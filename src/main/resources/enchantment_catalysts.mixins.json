@@ -8,6 +8,7 @@
     "AnvilMenuMixin"
   ],
   "client": [
+    "AnvilRecipeMakerMixin"
   ],
   "injectors": {
     "defaultRequire": 1

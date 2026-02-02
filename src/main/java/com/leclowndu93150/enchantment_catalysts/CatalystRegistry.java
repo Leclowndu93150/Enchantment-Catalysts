@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import com.leclowndu93150.enchantment_catalysts.data.CatalystData;
+import com.leclowndu93150.enchantment_catalysts.data.RepairOverride;
 import com.leclowndu93150.enchantment_catalysts.data.WeightedEnchant;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
@@ -24,13 +25,28 @@ import java.util.Map;
 public class CatalystRegistry {
 
     private static final Path CONFIG_PATH = Path.of("config", "enchantment_catalysts.json");
+    private static final Path REPAIR_CONFIG_PATH = Path.of("config", "anvil_repair_overrides.json");
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static final Type CONFIG_TYPE = new TypeToken<HashMap<String, CatalystData>>() {}.getType();
+    private static final Type REPAIR_CONFIG_TYPE = new TypeToken<HashMap<String, RepairOverride>>() {}.getType();
 
     private static HashMap<String, CatalystData> catalysts = new HashMap<>();
+    private static HashMap<String, RepairOverride> repairOverrides = new HashMap<>();
 
     public static Map<String, CatalystData> getAllCatalysts() {
         return Collections.unmodifiableMap(catalysts);
+    }
+
+    public static Map<String, RepairOverride> getAllRepairOverrides() {
+        return Collections.unmodifiableMap(repairOverrides);
+    }
+
+    public static RepairOverride getRepairOverride(String toolItemId) {
+        return repairOverrides.get(toolItemId);
+    }
+
+    public static void updateRepairOverrides(Map<String, RepairOverride> synced) {
+        repairOverrides = new HashMap<>(synced);
     }
 
     public static boolean isCatalyst(ItemStack stack) {
@@ -57,6 +73,23 @@ public class CatalystRegistry {
             }
         } else {
             saveDefaultConfig();
+        }
+        loadRepairConfig();
+    }
+
+    private static void loadRepairConfig() {
+        if (Files.exists(REPAIR_CONFIG_PATH)) {
+            try (Reader reader = Files.newBufferedReader(REPAIR_CONFIG_PATH)) {
+                HashMap<String, RepairOverride> loaded = GSON.fromJson(reader, REPAIR_CONFIG_TYPE);
+                if (loaded != null) {
+                    repairOverrides = loaded;
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+                saveDefaultRepairConfig();
+            }
+        } else {
+            saveDefaultRepairConfig();
         }
     }
 
@@ -165,6 +198,50 @@ public class CatalystRegistry {
                 new WeightedEnchant("minecraft:protection", 10, 3, 15),
                 new WeightedEnchant("minecraft:efficiency", 10, 3, 15)
         )));
+
+        return map;
+    }
+
+    private static void saveDefaultRepairConfig() {
+        repairOverrides = createRepairDefaults();
+        try {
+            Files.createDirectories(REPAIR_CONFIG_PATH.getParent());
+            try (Writer writer = Files.newBufferedWriter(REPAIR_CONFIG_PATH)) {
+                GSON.toJson(repairOverrides, writer);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static HashMap<String, RepairOverride> createRepairDefaults() {
+        LinkedHashMap<String, RepairOverride> map = new LinkedHashMap<>();
+
+        RepairOverride rawIron = new RepairOverride("minecraft:raw_iron", 1, 5);
+        map.put("minecraft:iron_sword", rawIron);
+        map.put("minecraft:iron_pickaxe", rawIron);
+        map.put("minecraft:iron_axe", rawIron);
+        map.put("minecraft:iron_shovel", rawIron);
+        map.put("minecraft:iron_hoe", rawIron);
+        map.put("minecraft:iron_helmet", rawIron);
+        map.put("minecraft:iron_chestplate", rawIron);
+        map.put("minecraft:iron_leggings", rawIron);
+        map.put("minecraft:iron_boots", rawIron);
+        map.put("minecraft:chainmail_helmet", rawIron);
+        map.put("minecraft:chainmail_chestplate", rawIron);
+        map.put("minecraft:chainmail_leggings", rawIron);
+        map.put("minecraft:chainmail_boots", rawIron);
+
+        RepairOverride rawGold = new RepairOverride("minecraft:raw_gold", 1, 5);
+        map.put("minecraft:golden_sword", rawGold);
+        map.put("minecraft:golden_pickaxe", rawGold);
+        map.put("minecraft:golden_axe", rawGold);
+        map.put("minecraft:golden_shovel", rawGold);
+        map.put("minecraft:golden_hoe", rawGold);
+        map.put("minecraft:golden_helmet", rawGold);
+        map.put("minecraft:golden_chestplate", rawGold);
+        map.put("minecraft:golden_leggings", rawGold);
+        map.put("minecraft:golden_boots", rawGold);
 
         return map;
     }

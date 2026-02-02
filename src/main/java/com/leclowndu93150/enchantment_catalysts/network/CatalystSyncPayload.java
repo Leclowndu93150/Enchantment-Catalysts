@@ -1,6 +1,7 @@
 package com.leclowndu93150.enchantment_catalysts.network;
 
 import com.leclowndu93150.enchantment_catalysts.data.CatalystData;
+import com.leclowndu93150.enchantment_catalysts.data.RepairOverride;
 import com.leclowndu93150.enchantment_catalysts.data.WeightedEnchant;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
@@ -12,7 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public record CatalystSyncPayload(Map<String, CatalystData> catalysts) implements CustomPacketPayload {
+public record CatalystSyncPayload(Map<String, CatalystData> catalysts, Map<String, RepairOverride> repairOverrides) implements CustomPacketPayload {
 
     public static final Type<CatalystSyncPayload> TYPE =
             new Type<>(Identifier.fromNamespaceAndPath("enchantment_catalysts", "catalyst_sync"));
@@ -37,7 +38,17 @@ public record CatalystSyncPayload(Map<String, CatalystData> catalysts) implement
             }
             map.put(itemId, new CatalystData(consume, enchantments));
         }
-        return new CatalystSyncPayload(map);
+        int repairSize = buf.readVarInt();
+        Map<String, RepairOverride> repairs = new HashMap<>();
+        for (int i = 0; i < repairSize; i++) {
+            String toolId = buf.readUtf();
+            String material = buf.readUtf();
+            int amount = buf.readVarInt();
+            int cost = buf.readVarInt();
+            repairs.put(toolId, new RepairOverride(material, amount, cost));
+        }
+
+        return new CatalystSyncPayload(map, repairs);
     }
 
     private void write(FriendlyByteBuf buf) {
@@ -53,6 +64,14 @@ public record CatalystSyncPayload(Map<String, CatalystData> catalysts) implement
                 buf.writeVarInt(we.level());
                 buf.writeVarInt(we.minCost());
             }
+        }
+
+        buf.writeVarInt(repairOverrides.size());
+        for (Map.Entry<String, RepairOverride> entry : repairOverrides.entrySet()) {
+            buf.writeUtf(entry.getKey());
+            buf.writeUtf(entry.getValue().material());
+            buf.writeVarInt(entry.getValue().amount());
+            buf.writeVarInt(entry.getValue().cost());
         }
     }
 

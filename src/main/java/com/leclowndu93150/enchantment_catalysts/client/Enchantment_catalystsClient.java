@@ -10,7 +10,7 @@ public class Enchantment_catalystsClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         ClientPlayNetworking.registerGlobalReceiver(CatalystSyncPayload.TYPE, (payload, context) -> {
-            ClientCatalystCache.update(payload.catalysts());
+            ClientCatalystCache.update(payload.catalysts(), payload.repairOverrides());
         });
 
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {

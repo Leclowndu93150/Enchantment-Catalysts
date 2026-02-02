@@ -15,7 +15,7 @@ public class Enchantment_catalysts implements ModInitializer {
         PayloadTypeRegistry.playS2C().register(CatalystSyncPayload.TYPE, CatalystSyncPayload.STREAM_CODEC);
 
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
-            CatalystSyncPayload payload = new CatalystSyncPayload(CatalystRegistry.getAllCatalysts());
+            CatalystSyncPayload payload = new CatalystSyncPayload(CatalystRegistry.getAllCatalysts(), CatalystRegistry.getAllRepairOverrides());
             ServerPlayNetworking.send(handler.getPlayer(), payload);
         });
     }
