@@ -15,6 +15,9 @@
     ],
     "main": [
       "com.leclowndu93150.enchantment_catalysts.Enchantment_catalysts"
+    ],
+    "jei_mod_plugin": [
+      "com.leclowndu93150.enchantment_catalysts.compat.jei.EnchantmentCatalystsJEIPlugin"
     ]
   },
   "mixins": [
@@ -24,5 +27,8 @@
     "fabricloader": ">=${loader_version}",
     "fabric-api": "*",
     "minecraft": "${minecraft_version}"
+  },
+  "suggests": {
+    "jei": "*"
   }
 }

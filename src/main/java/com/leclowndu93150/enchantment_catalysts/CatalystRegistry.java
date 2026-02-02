@@ -15,9 +15,11 @@ import java.io.Writer;
 import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 public class CatalystRegistry {
 
@@ -26,6 +28,10 @@ public class CatalystRegistry {
     private static final Type CONFIG_TYPE = new TypeToken<HashMap<String, CatalystData>>() {}.getType();
 
     private static HashMap<String, CatalystData> catalysts = new HashMap<>();
+
+    public static Map<String, CatalystData> getAllCatalysts() {
+        return Collections.unmodifiableMap(catalysts);
+    }
 
     public static boolean isCatalyst(ItemStack stack) {
         if (stack.isEmpty()) return false;
@@ -144,14 +150,20 @@ public class CatalystRegistry {
                 new WeightedEnchant("minecraft:unbreaking", 8, 3, 10)
         )));
 
-        map.put("minecraft:gold_ingot", new CatalystData(1, List.of(
+        map.put("minecraft:raw_gold", new CatalystData(1, List.of(
                 new WeightedEnchant("minecraft:smite", 10, 5, 15),
                 new WeightedEnchant("minecraft:bane_of_arthropods", 10, 5, 15)
         )));
 
-        map.put("minecraft:copper_ingot", new CatalystData(1, List.of(
+        map.put("minecraft:raw_copper", new CatalystData(1, List.of(
                 new WeightedEnchant("minecraft:knockback", 10, 2, 1),
                 new WeightedEnchant("minecraft:punch", 10, 2, 1)
+        )));
+
+        map.put("minecraft:raw_iron", new CatalystData(1, List.of(
+                new WeightedEnchant("minecraft:sharpness", 10, 3, 15),
+                new WeightedEnchant("minecraft:protection", 10, 3, 15),
+                new WeightedEnchant("minecraft:efficiency", 10, 3, 15)
         )));
 
         return map;
